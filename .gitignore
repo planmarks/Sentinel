@@ -1,0 +1,101 @@
+# =============================================================================
+# Sentinel — files that should not be published
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Secrets and private test data
+# -----------------------------------------------------------------------------
+# Manual test log contains a real recovery phrase, guard words and a passphrase.
+Vault/Firmware/manualtests.md
+manualtests*.md
+# Anything that looks like a seed / key / credential dump
+*seed*.txt
+*mnemonic*
+*.key
+*.pem
+*.p12
+*.pfx
+.env
+.env.*
+secrets/
+
+# -----------------------------------------------------------------------------
+# Logs (STM32CubeProgrammer logs include the ST-LINK serial number)
+# -----------------------------------------------------------------------------
+*.log
+
+# -----------------------------------------------------------------------------
+# KiCad
+# -----------------------------------------------------------------------------
+# Local-history snapshots (each one is a nested git repo with thousands of files)
+.history/
+# Automatic backups, autosaves and lock files
+*-backups/
+*.bak
+*.bck
+*.kicad_pcb-bak
+*.kicad_sch-bak
+*-bak
+*~
+_autosave-*
+\#auto_saved_files#
+*.lck
+~*.lck
+fp-info-cache
+# Per-user UI state (layer visibility, open sheets, …) incl. stray STMxxxx.kicad_prl
+*.kicad_prl
+# Netlists are regenerated from the schematic and embed absolute local paths
+*.net
+
+# -----------------------------------------------------------------------------
+# Firmware build artefacts
+# Release images (*.hex, *.bin) are kept so the board can be flashed without a
+# toolchain; intermediate objects and debug images are not.
+# -----------------------------------------------------------------------------
+*.o
+*.d
+*.su
+*.lst
+*.elf
+*.map
+*.a
+# Wordlist intermediates (downloaded corpus + generated lists, see docs)
+Vault/Firmware/build/*.txt
+# STM32CubeIDE / Eclipse project output
+Debug/
+Release/
+.settings/
+*.launch
+
+# -----------------------------------------------------------------------------
+# 3D / Blender
+# -----------------------------------------------------------------------------
+*.blend1
+*.blend2
+*.blend@
+
+# -----------------------------------------------------------------------------
+# Python
+# -----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# -----------------------------------------------------------------------------
+# OS / editor clutter
+# -----------------------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+._*
+*.swp
+*.swo
+.vscode/
+.idea/
+~$*
+
+# Claude Code local settings
+.claude/settings.local.json

@@ -1,0 +1,2 @@
+# Human Description
+Sentinel is an open-source energy efficient hardware crypto wallet built to conform to all industry standards. Sentinel's open hardware allows for relatively easy repairs for non-crucial components like the MCU and secure element.
