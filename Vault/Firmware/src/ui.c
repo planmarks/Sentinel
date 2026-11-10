@@ -8,6 +8,7 @@
 #include "diceware.h"
 #include "rng.h"
 #include "sha256.h"
+#include "fwupdate.h"
 #include "lowpower.h"
 #include "qrcodegen.h"
 #include "ui.h"
@@ -493,10 +494,20 @@ static void recover_flow(void) {
 }
 
 static void settings_menu(void) {
-  const char *opts[] = { "Shut Down", "Wipe", "Recover" };
+  const char *opts[] = { "Shut Down", "Wipe", "Recover", "Firmware Update" };
   for (;;) {
-    int m = menu("Settings", opts, 3);
+    int m = menu("Settings", opts, 4);
     if (m < 0) return;
+    if (m == 3) {
+      screen_begin("Firmware Update");
+      fb_text(0, 14, "Update firmware over", 1, true);
+      fb_text(0, 22, "USB. Only install", 1, true);
+      fb_text(0, 30, "builds you signed.", 1, true);
+      footer("OK:go  BACK:cancel");
+      screen_end();
+      int c; do { c = ui_event(); } while (c != EV_OK && c != EV_BACK);
+      if (c == EV_OK) fwupdate_run();
+    }
     if (m == 0) { go_sleep(); }
     if (m == 1) {
       screen_begin("Wipe");

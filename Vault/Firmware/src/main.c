@@ -8,6 +8,8 @@
 #include "ui.h"
 
 int main(void) {
+  __enable_irq();          /* the bootloader hands off with IRQs masked; re-enable
+                              so SysTick (and thus delay_ms/millis) runs */
   clock_init();
   buttons_init();
   rng_init();

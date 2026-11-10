@@ -368,4 +368,4 @@ Input corpus: `build/et_50k_freq.txt` (OpenSubtitles 2018 via hermitdave/Frequen
   persistent state; the README's roadmap is to put the wrapped master key in a protected data object, use the OPTIGA
   TRNG, and replace the flash attempt counter with an OPTIGA monotonic counter.
 - **Production hardening:** raise RDP to Level 2, add an IWDG, and consider an authenticated mode (e.g. AES‑GCM or
-  encrypt-then-MAC) for entries. See [review notes](../review-notes.md).
+  encrypt-then-MAC) for entries.

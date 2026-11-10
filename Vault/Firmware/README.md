@@ -2,46 +2,153 @@
 
 Offline password **generator + encrypted vault** by **@papathought** · **muru.global**
 
-A self-contained, USB-free password manager for the Sentinel V1B board: a
+A self-contained, offline password manager for the Sentinel V1B board: a
 0.96" SSD1306 OLED, six tactile buttons, an STM32L442KCU6 MCU (hardware TRNG +
 AES) and an OPTIGA Trust M secure element. Keys are generated on-device from the
 STM32 true RNG, the vault is AES-256 encrypted, and nothing ever leaves the box.
+The USB-C port carries **only signed firmware updates** — never vault data.
 
 Built from the ESP32 `PIGEON_PW_GEN` reference, rewritten bare-metal for STM32.
 
+The device boots through a **secure bootloader** that only runs an
+Ed25519-signed application (see [Secure boot](#secure-boot--signed-firmware-phase-1)).
+So the thing you flash to a blank board is the **signed bundle**
+`build/muru_signed.hex` (bootloader + manifest + signed app), *not* the bare app.
+
 ---
 
-## Flash it (STM32CubeProgrammer + ST-LINK V2)
-
-Build output is in `build/`:
-
-- **`build/muru_vault.hex`** ← flash this (carries its own load address, 0x08000000)
-- `build/muru_vault.elf` / `.bin` — same image in other formats
-
-**GUI:** open STM32CubeProgrammer → connect ST-LINK (SWD) → *Open file* →
-`build/muru_vault.hex` → **Download**.
-
-**CLI:**
+## Flash a blank board (STM32CubeProgrammer + ST-LINK V2)
 
 ```bash
-STM32_Programmer_CLI -c port=SWD -d build/muru_vault.hex -rst
+python tools/fw_sign.py keygen        # ONCE per project: makes the signing key + boot_pubkey.c
+./build_signed.sh 1                   # build app, sign v1, build bootloader, merge
+STM32_Programmer_CLI -c port=SWD -d build/muru_signed.hex -rst
 ```
 
-> The board exposes SWD on the Tag-Connect footprint (J2). SWD is **not** locked
-> (RDP Level 0) so you can reflash freely. For a production unit you would raise
-> RDP — see "Security notes" below.
+**GUI alternative:** STM32CubeProgrammer → connect ST-LINK (SWD) → open
+`build/muru_signed.hex` → **Download**. SWD is on the Tag-Connect footprint (J2).
+
+> On this dev board SWD is open (RDP Level 0) so you can reflash freely. The
+> **production** unit raises RDP to Level 2 (locks SWD + the ROM bootloader) —
+> at which point the signed USB-C updater below is the *only* way to update, and
+> the signing key is the root of trust.
+
+Later firmware goes on over **USB-C** (preferred, no debugger) or SWD — see
+[USB-CDC update transport](#usb-cdc-update-transport-phase-2b).
 
 ### Rebuild from source
 
-Needs the GNU Arm toolchain (bundled with STM32CubeIDE is fine — this was built
-with `arm-none-eabi-gcc` 14.3.1) and `make`:
+Needs the GNU Arm toolchain (bundled with STM32CubeIDE is fine — built with
+`arm-none-eabi-gcc` 14.3.1), `make`, and Python with the `cryptography` package
+(for signing; `pyserial` too for USB sending).
 
 ```bash
-make            # -> build/muru_vault.hex + .elf + .bin
+./build_signed.sh <version>   # the normal build: app + signature + bootloader + merged hex
+make                          # app only (dev/size checks); won't boot unsigned under the bootloader
+make -C bootloader            # bootloader only
 make clean
 ```
 
-Footprint: **~44 KB flash / ~20 KB RAM** on a 256 KB / 64 KB part — lots of head-room.
+Footprint on the 256 KB / 64 KB part: **bootloader** ~10 KB (of a 30 KB region),
+**app** ~72 KB (of 96 KB), **RAM** ~24 KB (of 64 KB).
+
+---
+
+## Secure boot & signed firmware (Phase 1)
+
+The device now boots through a **secure bootloader** that refuses to run any
+application whose **Ed25519 signature** doesn't verify against a public key baked
+into the bootloader. The private signing key never leaves the host.
+
+**Flash layout** (see [src/fwimage.h](src/fwimage.h)):
+
+| Region | Address | Size | Contents |
+|---|---|---|---|
+| Bootloader | `0x08000000` | 30 KB | verify-then-jump, OLED status |
+| Manifest | `0x08007800` | 2 KB | `fw_header` (version, length, 64-byte sig) |
+| Application | `0x08008000` | 96 KB | the vault app (relocated here) |
+| Staging | `0x08020000` | 96 KB | reserved for USB updates (Phase 2) |
+| Storage | `0x0803E000` | 8 KB | vault/auth/config (unchanged) |
+
+On boot the bootloader streams **SHA-256 over (manifest-core ‖ app)**, then
+Ed25519-verifies the manifest signature over that digest (tiny RAM — the image
+isn't held in memory). Valid → jump to the app; invalid/absent → it stops and
+shows a status screen (Phase 2 will enter USB update mode here).
+
+### Build & flash a signed image
+
+```bash
+python tools/fw_sign.py keygen     # once: makes tools/fw_signing_key.pem + boot_pubkey.c
+./build_signed.sh 1                # build app, sign as v1, build BL, merge
+# -> build/muru_signed.hex  (bootloader + manifest + app, one file)
+STM32_Programmer_CLI -c port=SWD -d build/muru_signed.hex -rst
+```
+
+> ⚠️ **`tools/fw_signing_key.pem` is the root of trust — keep it secret and backed
+> up.** Anyone with it can sign firmware your devices will accept; losing it means
+> no future updates for devices carrying this bootloader's public key. It is
+> `.gitignore`d. (Plain `make` still builds just the app for SWD development, but
+> the bootloader won't boot it until it's signed and the manifest is flashed.)
+
+### Field updates — the install engine (Phase 2, done)
+
+The bootloader now also **installs** a new image staged at `0x08020000`. On
+every boot it checks STAGING for a `[fw_header][payload]` blob and, if present:
+
+1. verifies its Ed25519 signature (same check as boot),
+2. enforces **anti-rollback** — refuses any `version` older than the installed
+   one (equal is allowed, so you can re-flash),
+3. programs the payload → APP and the header → MANIFEST, re-verifies, then
+4. wipes STAGING and resets.
+
+The order (STAGING wiped **last**) is power-fail safe: an interrupted install
+simply retries on the next boot. See [bootloader/update.c](bootloader/update.c).
+
+`build_signed.sh` emits **`build/muru_update.bin`** (= manifest ‖ payload). To
+exercise the installer today over SWD:
+
+```bash
+./build_signed.sh 2                                   # sign app as version 2
+STM32_Programmer_CLI -c port=SWD -d build/muru_update.bin 0x08020000 -rst
+# the bootloader verifies it, installs, and boots the new app
+```
+
+The install/anti-rollback/corrupt-reject logic is covered by a host simulation
+(upgrade installs, older version rejected, bad signature discarded).
+
+### USB-CDC update transport (Phase 2b)
+
+The device can now receive an update over **USB-C** instead of SWD. On-device:
+**Settings → Firmware Update → OK**; it enumerates as a **USB-CDC virtual COM
+port** ([src/usbfs.c](src/usbfs.c)) and streams the blob into STAGING
+([src/fwupdate.c](src/fwupdate.c)), showing a progress bar, then resets so the
+bootloader verifies + installs it. From the host:
+
+```bash
+pip install pyserial                       # one-time
+./build_signed.sh 4                        # sign a newer version than installed
+python tools/fw_send.py COM5               # Windows; or /dev/ttyACM0 on Linux
+```
+
+Protocol: host sends `"MVUP"`+`uint32` length, device replies `RDY`, host streams
+the blob, device replies `DONE` and reboots into the installer. Anti-rollback
+still applies (send a version **newer** than what's installed).
+
+The USB device stack is a compact **polled** implementation of the STM32L4 USB
+FS peripheral (control EP0 enumeration + a bulk pair for CDC).
+
+**Hardware-verified (2026-10-04):** the full path was exercised on a real
+Sentinel V1B — the host enumerated the CDC port, streamed a v7 image over USB-C
+in ~1.8 s, and the bootloader verified + anti-rollback-checked + installed it;
+the manifest advanced v6 → v7 and the device booted the new firmware. The entire
+Option C chain (secure boot + signed install + USB-C transport) now works end to
+end on silicon.
+
+### How this ties into RDP-2 / OPTIGA (production)
+
+On the hardened unit (RDP Level 2) the STM32 ROM bootloader and SWD are locked,
+so this **self-authored, signature-verified bootloader is the only update path**
+— and it still works, because it programs flash as your own code.
 
 ---
 
@@ -70,10 +177,14 @@ upside-down on V1B.
 **First boot** → *Welcome* → **Create new vault**:
 1. The device generates a random master seed and shows a **12-word recovery
    phrase** — write it down. It is shown once.
-2. Set a **passkey** (typed on the on-screen QWERTY keyboard, entered twice).
+2. It shows **3 guard words** — a second factor for the saved-passwords page
+   (see [Guard words](#guard-words-second-factor-on-saved-passwords)).
+3. Set a **passkey** — either typed on the QWERTY keyboard, or a generated
+   **Estonian passphrase** (see
+   [Estonian Diceware](#estonian-diceware-passphrase-experimental)).
 
-Thereafter, boot asks for the **passkey**. Enter it correctly → main menu.
-**Three wrong passkeys wipes the device** (full erase, anti-theft).
+Thereafter, boot asks for the **passkey/passphrase**. Enter it correctly → main
+menu. **Three wrong tries wipes the device** (full erase, anti-theft).
 
 ### Main menu
 1. **Vault** — browse saved entries; open one to view username / password
@@ -86,6 +197,8 @@ Thereafter, boot asks for the **passkey**. Enter it correctly → main menu.
    - **Shut Down** — enter low-power STOP mode. **Press OK to wake.**
    - **Wipe** — reset to factory state (see semantics below).
    - **Recover** — enter a 12-word phrase to restore a removed vault.
+   - **Firmware Update** — install a signed image over USB-C (see
+     [USB-CDC update transport](#usb-cdc-update-transport-phase-2b)).
 4. **About** — description & on-device guide.
 5. **Help** — QR code + link to the support portal (muru.global/support).
 6. **Credits** — @papathought · muru.global (with a website QR).
@@ -119,6 +232,9 @@ passkey wrap = pkKey = PBKDF2-HMAC-SHA256(passkey, salt, 8000)
 - Randomness is the **STM32 hardware TRNG**.
 - The wrong-passkey counter is written to flash **before** each check, so a
   power-cycle cannot cheat the 3-strike wipe.
+- **Firmware authenticity:** the bootloader Ed25519-verifies the app on every
+  boot, and field updates (USB-C or SWD) are signature- and anti-rollback-checked
+  before install — so the device only ever runs firmware you signed.
 
 ### Wipe vs. Recover (deliberate design)
 - **Settings → Wipe** removes the passkey + config but leaves the vault
@@ -143,6 +259,10 @@ passkey wrap = pkKey = PBKDF2-HMAC-SHA256(passkey, salt, 8000)
   rollback). Those are the natural next hardening step; the storage layer
   (`flash_store.c` / `vault.c`) is deliberately isolated so it can move behind
   the OPTIGA Shielded Connection without touching the UI.
+- **Speed (16 MHz):** the core runs at 16 MHz, so the boot-time signature verify
+  (~5 s, behind a "Verifying…" screen) and the passkey PBKDF2 (~2–4 s) are slow.
+  Raising the clock to 80 MHz would cut both ~5× with no security cost — planned,
+  not yet applied. Keep I²C on its own 16 MHz source so the display is unaffected.
 
 ---
 
@@ -213,3 +333,38 @@ not a cryptographic layer**: it stops casual/shoulder access to saved passwords,
 but a flash dump would reveal the words. The real confidentiality still rests on
 the passkey + seed (and, on the hardened firmware, RDP L2 + the OPTIGA). A guard
 challenge is 1-in-27 to blind-guess, so treat it as a convenience gate.
+
+---
+
+## Source layout
+
+```
+Firmware/
+  build_signed.sh          one-shot: build app -> sign -> build BL -> merge (+ staging blob)
+  Makefile                 app build (-> build/muru_vault.{hex,elf,bin})
+  linker/
+    stm32l442.ld           app @ 0x08008000, 96 KB (storage stays @ 0x0803E000)
+    bootloader.ld          bootloader @ 0x08000000, 30 KB
+  src/                     APPLICATION
+    main.c  ui.c           entry + all screens/menus/keyboard/idle
+    vault.c  flash_store.c passkey auth, seed-derived master key, encrypted entries, guard words
+    bip39.c  diceware.c    12-word recovery (BIP39) + Estonian passphrase/guard wordlist
+    fwupdate.c  usbfs.c    USB update mode + polled USB-FS CDC device
+    flashraw.c             generic flash writer (streams image into STAGING)
+    fwimage.h              shared image/manifest format + flash map
+    ssd1306/font/i2c/buttons/rng/clock/lowpower   drivers
+    crypto/{sha256,aes}.c  SHA-256/HMAC/PBKDF2 + AES-256
+    cmsis/, startup_*.s, system_stm32l4xx.c       device scaffolding
+  bootloader/              SECURE BOOTLOADER
+    main.c                 verify app -> jump, or install a staged update first
+    boot_verify.c          SHA-256(core||payload) + Ed25519 verify (tweetnacl)
+    boot_pubkey.c          baked-in public key (generated by fw_sign.py keygen)
+    update.c  bl_flash.c   staged-image install + anti-rollback, flash ops
+  tools/
+    fw_sign.py             keygen / sign / verify / blob / merge
+    fw_send.py             stream a signed blob to the device over USB-CDC (pyserial)
+    curate_estonian.py  validate_wordlist.py   wordlist generation/checking
+    fw_signing_key.pem     ROOT OF TRUST - private key, gitignored, keep secret + backed up
+```
+
+Flash map and the signed-image format live in [src/fwimage.h](src/fwimage.h).

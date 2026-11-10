@@ -102,8 +102,7 @@ Connections (identical on both boards):
 | D1D2 | common drain (internal) |
 
 > ⚠️ **Review note:** in the usual DW01A reference circuit the **OD**‑driven FET has its source on **B−** and the
-> **OC**‑driven FET has its source on **P−**. Here it is the other way round. See
-> [review notes](../review-notes.md#h1-battery-protection-mosfets-appear-swapped) — worth checking against the
+> **OC**‑driven FET has its source on **P−**. Here it is the other way round — worth checking against the
 > FS8205A / DW01A datasheets before the next PCB spin.
 
 ---
@@ -177,7 +176,7 @@ Infineon **SLS32AIA010MLUSON10XTMC1** — OPTIGA™ Trust M, general-purpose con
 | 3 SDA | I²C data | shared `SDA` (PB7) | dedicated `SDA2` (PB14) |
 | 9 RST# | reset | PB0 | PB0 |
 
-What the OPTIGA is (and isn't) for in Sentinel is discussed in [`Vault/ARCHITECTURE.md`](../../Vault/ARCHITECTURE.md):
+What the OPTIGA is (and isn't) for in Sentinel is discussed in [`ARCHITECTURE.md`](../../Cold%20Wallet/Hardware/ARCHITECTURE.md):
 it **cannot sign secp256k1 / ed25519**, so its role is protected storage, certified TRNG, monotonic
 anti-rollback counters and the encrypted "Shielded Connection" I²C link.
 

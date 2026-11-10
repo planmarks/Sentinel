@@ -1,0 +1,5 @@
+
+# firmware signing private key - NEVER commit
+tools/fw_signing_key.pem
+build/
+bootloader/build/

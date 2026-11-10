@@ -1,0 +1,75 @@
+ERC report (2026-09-05T21:24:20, Encoding UTF8)
+Report includes: Errors
+
+***** Sheet /
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(2700 mils, 6150 mils): Symbol #PWR015 Pin 1 [Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(2900 mils, 2100 mils): Symbol U1 Pin 12 [PA6, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(2900 mils, 2200 mils): Symbol U1 Pin 13 [PA7, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(2900 mils, 2300 mils): Symbol U1 Pin 18 [PA8, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(2900 mils, 2400 mils): Symbol U1 Pin 19 [PA9, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(2900 mils, 2500 mils): Symbol U1 Pin 20 [PA10, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(2900 mils, 3100 mils): Symbol U1 Pin 25 [PA15/JTDI, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(2900 mils, 3300 mils): Symbol U1 Pin 2 [PC14-OSC32_1N, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(2900 mils, 3400 mils): Symbol U1 Pin 3 [PC15-OSC32_OUT, Bidirectional, Line]
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(4900 mils, 1300 mils): Symbol U1 Pin 5 [VDDA/VREF+, Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(4900 mils, 1600 mils): Symbol U1 Pin 15 [PB1, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(4900 mils, 1700 mils): Symbol U1 Pin 26 [PB3/JTDO-TRACESWO, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(4900 mils, 1800 mils): Symbol U1 Pin 27 [PB4/NJTRST, Bidirectional, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(4900 mils, 1900 mils): Symbol U1 Pin 28 [PB5, Bidirectional, Line]
+[pin_not_driven]: Input pin not driven by any Output pins
+    ; error
+    @(5450 mils, 7450 mils): Symbol U4 Pin 2 [D1D2, Input, Line]
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(5900 mils, 4900 mils): Symbol U5 Pin 5 [VCC, Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(6400 mils, 4150 mils): Symbol SW1 Pin 1 [A, Passive, Line]
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(7100 mils, 4050 mils): Symbol U6 Pin 1 [VI, Power input, Line]
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(8950 mils, 2050 mils): Symbol #PWR03 Pin 1 [Power input, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(10150 mils, 6100 mils): Symbol U3 Pin 7 [Unspecified, Line]
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(10350 mils, 1150 mils): Symbol DS1 Pin 28 [VCC, Power input, Line]
+
+ ** ERC messages: 21  Errors 21  Warnings 0
+
+ ** Ignored checks:
+    - Global label only appears once in the schematic
+    - Four connection points are joined together
+    - SPICE model issue
+    - Assigned footprint doesn't match footprint filters

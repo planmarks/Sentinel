@@ -170,7 +170,7 @@ recovering from a locked-up SE without a full power cycle.
 | SCL / SDA | I²C1 (shared with the OLED) |
 | ALRT | PB2 |
 | QSTRT | GND (quick-start disabled) |
-| CTG | **not connected** — see [review notes](../review-notes.md#h2-max17048-ctg-pin-left-floating) |
+| CTG | **not connected** — the MAX17048 datasheet asks for CTG to be tied to GND |
 
 The fuel gauge is powered directly from the cell, so it keeps tracking state-of-charge while the device is switched off.
 

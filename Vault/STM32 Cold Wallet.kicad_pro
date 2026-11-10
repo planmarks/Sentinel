@@ -539,7 +539,7 @@
       "netlist": "",
       "plot": "V1B Gerber/",
       "specctra_dsn": "",
-      "step": "",
+      "step": "3D/Sentinel_Vault_3D_Model.stl",
       "vrml": ""
     },
     "page_layout_descr_file": ""

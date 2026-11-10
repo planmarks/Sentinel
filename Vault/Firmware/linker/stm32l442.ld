@@ -1,8 +1,8 @@
-/* STM32L442KCU6 - Muru Vault
+/* STM32L442KCU6 - Muru Vault APPLICATION (runs under the secure bootloader)
  * 256 KB flash @ 0x08000000, 64 KB SRAM @ 0x20000000.
- * The top 8 KB of flash (4 x 2 KB pages, 0x0803E000..0x0803FFFF) is carved
- * out of the code region and used by flash_store.c for the encrypted vault,
- * auth blob and config. Keep this in sync with STORE_* in flash_store.c.
+ * The app is relocated to 0x08008000 (after the 32 KB bootloader + manifest).
+ * STORAGE stays at 0x0803E000 so flash_store.c addresses are unchanged.
+ * Build with -DVECT_TAB_ADDR=0x08008000 so the vector table is relocated too.
  */
 ENTRY(Reset_Handler)
 
@@ -12,7 +12,7 @@ _Min_Stack_Size = 0x1000;/* 4 KB */
 
 MEMORY
 {
-  FLASH  (rx)  : ORIGIN = 0x08000000, LENGTH = 248K   /* 256K - 8K storage */
+  FLASH  (rx)  : ORIGIN = 0x08008000, LENGTH = 96K    /* app region */
   STORE  (r)   : ORIGIN = 0x0803E000, LENGTH = 8K
   RAM    (xrw) : ORIGIN = 0x20000000, LENGTH = 64K
 }

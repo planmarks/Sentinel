@@ -189,7 +189,7 @@ Plus: one single-cell Li‑ion / Li‑Po battery with a 2.0 mm 2‑pin lead.
 
 ## Differences from the design plan
 
-[`Vault/ARCHITECTURE.md`](../../Vault/ARCHITECTURE.md) was written before the layout. The as-built V1B differs:
+[`ARCHITECTURE.md`](../../Cold%20Wallet/Hardware/ARCHITECTURE.md) was written before the layout. The as-built V1B differs:
 
 | Plan (ARCHITECTURE.md) | As built (V1B) |
 |---|---|

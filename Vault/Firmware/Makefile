@@ -21,7 +21,7 @@ INCLUDES = -Isrc -Isrc/cmsis -Isrc/crypto
 
 # --- flags --------------------------------------------------------------------
 MCU = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
-DEFS = -DSTM32L442xx
+DEFS = -DSTM32L442xx -DVECT_TAB_ADDR=0x08008000U
 
 CFLAGS  = $(MCU) $(DEFS) $(INCLUDES) -Os -g3 -std=c11 \
           -ffunction-sections -fdata-sections -fno-common \

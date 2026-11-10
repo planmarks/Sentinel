@@ -16,6 +16,7 @@
 
 /* ---- timing ---- */
 void     clock_init(void);
+void     usb_clock_init(void);   /* 48 MHz USB clock (HSI48 + CRS) */
 uint32_t millis(void);
 void     delay_ms(uint32_t ms);
 

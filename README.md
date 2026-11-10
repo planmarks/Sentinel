@@ -1,5 +1,15 @@
 # Sentinel
 
+![License](https://img.shields.io/badge/license-not%20yet%20chosen-lightgrey.svg)
+![MCU](https://img.shields.io/badge/MCU-STM32L442%20%7C%20STM32U585-03234B)
+![Secure element](https://img.shields.io/badge/secure%20element-OPTIGA%20Trust%20M%20%28CC%20EAL6%2B%29-success)
+![USB](https://img.shields.io/badge/USB--C-2.0%20Full--Speed-informational)
+![Firmware](https://img.shields.io/badge/firmware-Muru%20Vault%20%7C%20Sentinel%20Core%200.1.0-orange)
+![KiCad](https://img.shields.io/badge/KiCad-10-314CB0)
+![Open Hardware](https://img.shields.io/badge/hardware-open%20source-brightgreen)
+
+<img src="Renders/Sentinel-V1C-Render-1.png" alt="Sentinel V1C 3D render — populated front with OLED, six buttons, STM32U585 and USB-C, next to the back of the board" width="540">
+
 **Sentinel** is an open-source, low-power hardware security device by **@papathought / [muru.global](https://muru.global)**.
 It is built around an STM32 microcontroller, an **Infineon OPTIGA™ Trust M** secure element, a 0.96" 128×64 OLED,
 six tactile buttons, a USB‑C port and an on-board single-cell Li‑ion charger.
@@ -23,10 +33,10 @@ The same hardware family runs two different firmwares:
 | Battery fuel gauge | — | MAX17048 (I²C, alert line to MCU) |
 | PCB | 2 layers, ≈ 45.3 × 73.8 mm, OLED + power switch on the back | 4 layers, ≈ 39.1 × 73.8 mm, all parts on top |
 | Status | Fabricated (Gerbers in [`Vault/Sentinel-V1B Gerber.zip`](Vault/Sentinel-V1B%20Gerber.zip)), firmware running | Design in progress, 3D models / renders available, no firmware yet |
-| Docs | [Hardware V1B](docs/hardware/sentinel-v1b.md) | [Hardware V1C](docs/hardware/sentinel-v1c.md) |
+| Docs | [Hardware V1B](Docs/hardware/sentinel-v1b.md) | [Hardware V1C](Docs/hardware/sentinel-v1c.md) |
 
 Circuits that both boards share (charger, battery protection, LDO, OLED, USB‑C, buttons, SWD) are described once in
-[Common circuits](docs/hardware/common-circuits.md).
+[Common circuits](Docs/hardware/common-circuits.md).
 
 ```mermaid
 flowchart LR
@@ -49,15 +59,14 @@ flowchart LR
 
 | Topic | Document |
 |---|---|
-| Sentinel V1B board (STM32L442) | [docs/hardware/sentinel-v1b.md](docs/hardware/sentinel-v1b.md) |
-| Sentinel V1C / 2MB board (STM32U585) | [docs/hardware/sentinel-v1c.md](docs/hardware/sentinel-v1c.md) |
-| Shared circuit blocks | [docs/hardware/common-circuits.md](docs/hardware/common-circuits.md) |
-| Muru Vault firmware internals | [docs/firmware/muru-vault.md](docs/firmware/muru-vault.md) |
+| Sentinel V1B board (STM32L442) | [Docs/hardware/sentinel-v1b.md](Docs/hardware/sentinel-v1b.md) |
+| Sentinel V1C / 2MB board (STM32U585) | [Docs/hardware/sentinel-v1c.md](Docs/hardware/sentinel-v1c.md) |
+| Shared circuit blocks | [Docs/hardware/common-circuits.md](Docs/hardware/common-circuits.md) |
+| Muru Vault firmware internals | [Docs/firmware/muru-vault.md](Docs/firmware/muru-vault.md) |
 | Muru Vault user guide | [Vault/Firmware/README.md](Vault/Firmware/README.md) |
-| Sentinel Core (prebuilt wallet image) | [docs/firmware/sentinel-core.md](docs/firmware/sentinel-core.md) |
-| Building & flashing | [docs/firmware/flashing.md](docs/firmware/flashing.md) |
-| Design review notes & known issues | [docs/review-notes.md](docs/review-notes.md) |
-| Original STM32 + OPTIGA migration plan | [Vault/ARCHITECTURE.md](Vault/ARCHITECTURE.md) |
+| Sentinel Core (prebuilt wallet image) | [Docs/firmware/sentinel-core.md](Docs/firmware/sentinel-core.md) |
+| Building & flashing | [Docs/firmware/flashing.md](Docs/firmware/flashing.md) |
+| Original STM32 + OPTIGA migration plan | [Cold Wallet/Hardware/ARCHITECTURE.md](Cold%20Wallet/Hardware/ARCHITECTURE.md) |
 
 ---
 
@@ -69,7 +78,7 @@ flowchart LR
 | GNU Arm Embedded (`arm-none-eabi-gcc`) | 14.3.1 (bundled with STM32CubeIDE 2.2.0) |
 | STM32CubeProgrammer | used via ST‑LINK V2 over SWD |
 | Python 3 | wordlist tooling in `Vault/Firmware/tools/` |
-| Blender | renders in `Cold Wallet/3D/` |
+| Blender 5.2 | render scenes in `Cold Wallet/3D/`, output in `Renders/` |
 
 ## Credits
 

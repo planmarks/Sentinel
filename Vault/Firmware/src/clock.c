@@ -40,3 +40,22 @@ void clock_init(void) {
   SysTick->VAL  = 0;
   SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
 }
+
+/* Bring up the 48 MHz USB clock domain: HSI48 as CLK48 source, trimmed to the
+ * USB host by the CRS, plus the VDDUSB supply-valid bit. Call before usb_init(). */
+void usb_clock_init(void) {
+  RCC->APB1ENR1 |= RCC_APB1ENR1_PWREN;
+  (void)RCC->APB1ENR1;
+  PWR->CR2 |= PWR_CR2_USV;                 /* VDDUSB supply valid */
+
+  RCC->CRRCR |= RCC_CRRCR_HSI48ON;
+  while (!(RCC->CRRCR & RCC_CRRCR_HSI48RDY)) {}
+  RCC->CCIPR &= ~RCC_CCIPR_CLK48SEL;       /* 00 = HSI48 feeds USB + RNG */
+
+  RCC->APB1ENR1 |= RCC_APB1ENR1_USBFSEN;   /* USB device clock */
+
+  /* CRS: auto-trim HSI48 against USB start-of-frame. */
+  RCC->APB1ENR1 |= RCC_APB1ENR1_CRSEN;
+  CRS->CFGR = (CRS->CFGR & ~CRS_CFGR_SYNCSRC) | (2u << CRS_CFGR_SYNCSRC_Pos); /* USB SOF */
+  CRS->CR |= CRS_CR_AUTOTRIMEN | CRS_CR_CEN;
+}

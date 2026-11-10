@@ -8,7 +8,7 @@
 
 > **The source code for this firmware is not in this repository.** Everything below was determined by inspecting
 > the image (load address, vector table and embedded strings). Treat it as a description, not a specification.
-> According to [`ARCHITECTURE.md`](../../Vault/ARCHITECTURE.md), it is a port of an earlier ESP32‑C5 proof of concept
+> According to [`ARCHITECTURE.md`](../../Cold%20Wallet/Hardware/ARCHITECTURE.md), it is a port of an earlier ESP32‑C5 proof of concept
 > (Arduino C++, trezor-crypto / TweetNaCl / mbedTLS / U8g2) to the STM32L442 with the OPTIGA Trust M.
 
 ---
